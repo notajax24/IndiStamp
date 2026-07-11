@@ -15,7 +15,8 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/indistamp.png" alt="IndiStamp Logo" width={200} height={80} />
+            <Image src="/indistamp-black.png" alt="IndiStamp Logo" width={200} height={80} className="block dark:hidden" />
+            <Image src="/indistamp-white.png" alt="IndiStamp Logo" width={200 } height={80} className="hidden dark:block" />
           </Link>
 
           {/* Desktop Navigation */}

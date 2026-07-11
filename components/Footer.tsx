@@ -14,7 +14,8 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Image src="/indistamp.png" alt="IndiStamp Logo" width={120} height={80} />
+              <Image src="/indistamp-black.png" alt="IndiStamp Logo" width={150} height={80} className="block dark:hidden" />
+              <Image src="/indistamp-white.png" alt="IndiStamp Logo" width={150} height={80} className="hidden dark:block" />
             </div>
             <p className="text-sm text-muted-foreground">
               The free online tool to calculate stamp duty and registration charges for Indian properties instantly.
