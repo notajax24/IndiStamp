@@ -34,7 +34,7 @@ export default function ContactPage() {
       'name': 'IndiStamp',
       'logo': {
         '@type': 'ImageObject',
-        'url': 'https://stamp-duty-calculator.vercel.app/icon.svg'
+        'url': 'https://stamp-duty-calculator.vercel.app/indistamp-black.png'
       }
     }
   };

@@ -8,23 +8,29 @@ export const metadata: Metadata = {
   title: 'IndiStamp - Stamp Duty Calculator for India',
   description: 'IndiStamp: The free online tool to calculate stamp duty and registration charges for property purchases across all Indian states.',
   generator: 'v0.app',
+  applicationName: 'IndiStamp',
+  appleWebApp: {
+    capable: true,
+    title: 'IndiStamp',
+    statusBarStyle: 'default',
+  },
   icons: {
+    shortcut: '/favicon.ico',
     icon: [
       {
-        url: '/icon-light-32x32.png',
+        url: '/indistamp-black.png',
         media: '(prefers-color-scheme: light)',
+        type: 'image/png',
       },
       {
-        url: '/icon-dark-32x32.png',
+        url: '/indistamp-white.png',
         media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
+        type: 'image/png',
       },
     ],
-    apple: '/apple-icon.png',
+    apple: '/apple-touch-icon.png',
   },
+  manifest: '/manifest.webmanifest',
 }
 
 export const viewport: Viewport = {
