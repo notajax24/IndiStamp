@@ -14,13 +14,13 @@ export default function manifest(): MetadataRoute.Manifest {
         src: '/indistamp-black.png',
         sizes: '192x192',
         type: 'image/png',
-        purpose: 'maskable',
+        purpose: 'any',
       },
       {
         src: '/indistamp-black.png',
         sizes: '512x512',
         type: 'image/png',
-        purpose: 'maskable',
+        purpose: 'any',
       },
     ],
   }

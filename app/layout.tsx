@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-touch-icon.png',
   },
-  manifest: '/manifest.webmanifest',
+  manifest: '/manifest.json',
 }
 
 export const viewport: Viewport = {
