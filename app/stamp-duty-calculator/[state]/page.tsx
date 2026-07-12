@@ -5,7 +5,7 @@ import { stampDutyRates } from '@/data/stampDutyRates';
 import { StampDutyCalculator } from '@/components/StampDutyCalculator';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { ArrowLeft, Info } from 'lucide-react';
+import { ArrowLeft, Landmark, FileSignature, FileText, ListOrdered, Check } from 'lucide-react';
 
 interface Props {
   params: Promise<{
@@ -62,18 +62,18 @@ export default async function StampDutyPage({ params }: Props) {
     mainEntity: [
       {
         '@type': 'Question',
-        name: `What is the stamp duty rate in ${stateData.state}?`,
+        name: `What are the stamp duty rates in ${stateData.state} for 2026?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: `The current stamp duty rate in ${stateData.state} is ${stateData.stampDutyRate}% of the property value for 2026.`,
+          text: `Stamp duty rates in ${stateData.state} for 2026 vary based on property value, location (urban/rural), and buyer category (male, female, joint). Use our calculator for precise figures.`,
         },
       },
       {
         '@type': 'Question',
-        name: `How is registration charge calculated in ${stateData.state}?`,
+        name: `How are registration charges calculated in ${stateData.state}?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: `Registration charges in ${stateData.state} are calculated as ${stateData.registrationRate}% of the property value.`,
+          text: `Registration charges in ${stateData.state} can be a percentage of the property value or a fixed fee based on value tiers. Our calculator provides detailed calculations.`,
         },
       },
       {
@@ -81,9 +81,7 @@ export default async function StampDutyPage({ params }: Props) {
         name: `Are there concessions available for women buyers in ${stateData.state}?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: stateData.womenConcession
-            ? `Yes, women buyers in ${stateData.state} may be eligible for a ${stateData.womenConcession}% concession on stamp duty.`
-            : `Stamp duty concessions for women buyers may not be applicable in ${stateData.state}. Check with your local registration office.`,
+          text: `Many states, including ${stateData.state}, may offer stamp duty concessions for women buyers. Our calculator automatically applies these discounts where applicable.`,
         },
       },
     ],
@@ -146,71 +144,70 @@ export default async function StampDutyPage({ params }: Props) {
 
         {/* Information Section */}
         <section className="py-12 sm:py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-2 gap-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-in fade-in duration-500">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl sm:text-5xl font-bold text-foreground">
+                Understanding the Process in {stateData.state}
+              </h2>
+              <p className="text-lg text-muted-foreground mt-2 max-w-3xl mx-auto">
+                Here’s a breakdown of the charges, required documents, and the general registration process for property in {stateData.state}.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 mb-8">
               {/* Stamp Duty Details */}
-              <div className="rounded-xl border border-border bg-card p-8 hover:border-primary/50 transition-all">
+              <div className="rounded-xl border border-border bg-card p-8 hover:border-primary/50 transition-all animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <Info className="w-5 h-5 text-primary" />
+                    <Landmark className="w-5 h-5 text-primary" />
                   </div>
                   <h2 className="text-2xl font-semibold text-foreground">Stamp Duty Details</h2>
                 </div>
 
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
-                    <span className="inline-block w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                    <Check className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
                     <div>
                       <strong className="text-foreground">Rate:</strong>
-                      <p className="text-muted-foreground">
-                        {stateData.stampDutyRate}% of property value
-                      </p>
+                      <p className="text-muted-foreground">Varies by property value, location, and buyer. Use the calculator for exact rates.</p>
                     </div>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="inline-block w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                    <Check className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
                     <div>
                       <strong className="text-foreground">Purpose:</strong>
-                      <p className="text-muted-foreground">
-                        Government tax on property transfer
-                      </p>
+                      <p className="text-muted-foreground">Government tax on property transfer.</p>
                     </div>
                   </li>
-                  {stateData.womenConcession && (
-                    <li className="flex items-start gap-3 p-4 rounded-lg bg-secondary/20 border border-secondary/40">
-                      <span className="inline-block w-2 h-2 bg-secondary-foreground rounded-full mt-2 flex-shrink-0" />
-                      <div>
-                        <strong className="text-foreground">Women's Concession:</strong>
-                        <p className="text-muted-foreground">
-                          {stateData.womenConcession}% reduction for women buyers
-                        </p>
-                      </div>
-                    </li>
-                  )}
+                  <li className="flex items-start gap-3">
+                    <Check className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                    <div>
+                      <strong className="text-foreground">Concessions:</strong>
+                      <p className="text-muted-foreground">Concessions may be available for female buyers or joint ownership.</p>
+                    </div>
+                  </li>
                 </ul>
               </div>
 
               {/* Registration Charges */}
-              <div className="rounded-xl border border-border bg-card p-8 hover:border-primary/50 transition-all">
+              <div className="rounded-xl border border-border bg-card p-8 hover:border-primary/50 transition-all animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
-                    <Info className="w-5 h-5 text-accent" />
+                    <FileSignature className="w-5 h-5 text-accent" />
                   </div>
                   <h2 className="text-2xl font-semibold text-foreground">Registration Charges</h2>
                 </div>
 
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
-                    <span className="inline-block w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0" />
+                    <Check className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
                     <div>
                       <strong className="text-foreground">Rate:</strong>
-                      <p className="text-muted-foreground">
-                        {stateData.registrationRate}% of property value
-                      </p>
+                      <p className="text-muted-foreground">Typically a percentage of property value or a fixed fee.</p>
                     </div>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="inline-block w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0" />
+                    <Check className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
                     <div>
                       <strong className="text-foreground">Purpose:</strong>
                       <p className="text-muted-foreground">
@@ -219,7 +216,7 @@ export default async function StampDutyPage({ params }: Props) {
                     </div>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="inline-block w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0" />
+                    <Check className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
                     <div>
                       <strong className="text-foreground">Note:</strong>
                       <p className="text-muted-foreground">
@@ -228,6 +225,44 @@ export default async function StampDutyPage({ params }: Props) {
                     </div>
                   </li>
                 </ul>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Required Documents */}
+              <div className="rounded-xl border border-border bg-card p-8 hover:border-primary/50 transition-all animate-in fade-in slide-in-from-bottom-4 duration-500 delay-450">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-primary" />
+                  </div>
+                  <h2 className="text-2xl font-semibold text-foreground">Required Documents</h2>
+                </div>
+                <ul className="space-y-3 text-muted-foreground">
+                  <li className="flex items-start gap-3"><Check className="w-4 h-4 text-primary mt-1 flex-shrink-0" /><span>Sale Agreement</span></li>
+                  <li className="flex items-start gap-3"><Check className="w-4 h-4 text-primary mt-1 flex-shrink-0" /><span>Title Deed and Proof of Ownership</span></li>
+                  <li className="flex items-start gap-3"><Check className="w-4 h-4 text-primary mt-1 flex-shrink-0" /><span>Identity Proof (Aadhaar, PAN) of all parties</span></li>
+                  <li className="flex items-start gap-3"><Check className="w-4 h-4 text-primary mt-1 flex-shrink-0" /><span>Address Proof of all parties</span></li>
+                  <li className="flex items-start gap-3"><Check className="w-4 h-4 text-primary mt-1 flex-shrink-0" /><span>No Objection Certificate (NOC), if applicable</span></li>
+                  <li className="flex items-start gap-3"><Check className="w-4 h-4 text-primary mt-1 flex-shrink-0" /><span>Property Card and Building Plan</span></li>
+                </ul>
+                <p className="text-xs text-muted-foreground mt-4">Note: This is a general list. Document requirements may vary.</p>
+              </div>
+
+              {/* Registration Process */}
+              <div className="rounded-xl border border-border bg-card p-8 hover:border-primary/50 transition-all animate-in fade-in slide-in-from-bottom-4 duration-500 delay-600">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                    <ListOrdered className="w-5 h-5 text-accent" />
+                  </div>
+                  <h2 className="text-2xl font-semibold text-foreground">Registration Process</h2>
+                </div>
+                <ol className="space-y-3 text-muted-foreground">
+                  <li className="flex items-start gap-3"><span className="font-bold text-accent">1.</span><span>Estimate stamp duty and registration fees using our calculator.</span></li>
+                  <li className="flex items-start gap-3"><span className="font-bold text-accent">2.</span><span>Purchase e-stamp paper of the required value.</span></li>
+                  <li className="flex items-start gap-3"><span className="font-bold text-accent">3.</span><span>Prepare the sale deed and get it signed by all parties.</span></li>
+                  <li className="flex items-start gap-3"><span className="font-bold text-accent">4.</span><span>Book an appointment at the Sub-Registrar's Office (SRO).</span></li>
+                  <li className="flex items-start gap-3"><span className="font-bold text-accent">5.</span><span>Visit the SRO with all parties, witnesses, and original documents for registration.</span></li>
+                </ol>
               </div>
             </div>
 

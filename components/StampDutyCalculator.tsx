@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { ChevronsUpDown, CheckCircle, Copy, Check } from 'lucide-react';
-import type { StampDutyState } from '@/data/stampDutyRates';
+import type { StampDutyState, StampDutyRules, StampDutyRulesDetail } from '@/data/stampDutyRates';
 
 interface CalculatorProps {
   stateData: StampDutyState;
@@ -17,9 +17,13 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
+type BuyerCategory = 'male' | 'female' | 'joint';
+type LocationType = 'urban' | 'rural';
+
 function calculateStampDuty(
   propertyValue: string,
   buyerCategory: BuyerCategory,
+  locationType: LocationType,
   stateData: StampDutyState
 ) {
   const value = parseFloat(propertyValue) || 0;
@@ -35,57 +39,117 @@ function calculateStampDuty(
     };
   }
 
-  const hasWomenConcession = stateData.womenConcession && stateData.womenConcession > 0;
-  const hasJointConcession =
-    stateData.jointOwnershipConcession && stateData.jointOwnershipConcession > 0;
+  const { stampDutyRules, registrationRules, additionalLevies, slug } = stateData;
 
-  let stampDutyPercent = stateData.stampDutyRate;
-  const registrationPercent = stateData.registrationRate;
-  let concessionApplied = '';
-
-  if (buyerCategory === 'female' && hasWomenConcession) {
-    stampDutyPercent = Math.max(0, stampDutyPercent - stateData.womenConcession!);
-    concessionApplied = `Women's concession applied (${stateData.womenConcession}% discount)`;
-  } else if (buyerCategory === 'joint' && hasJointConcession) {
-    stampDutyPercent = Math.max(0, stampDutyPercent - stateData.jointOwnershipConcession!);
-    concessionApplied = `Joint ownership concession applied (${stateData.jointOwnershipConcession}% discount)`;
+  let applicableStampDutyRules: StampDutyRulesDetail | StampDutyRules | undefined = stampDutyRules;
+  if (stampDutyRules.urban && stampDutyRules.rural) {
+    applicableStampDutyRules = locationType === 'urban' ? stampDutyRules.urban : stampDutyRules.rural;
   }
 
-  const stampDutyAmount = (value * stampDutyPercent) / 100;
-  const registrationAmount = (value * registrationPercent) / 100;
+  let stampDutyPercent = 0;
+  let concessionApplied = '';
+
+  if (applicableStampDutyRules?.slabs) {
+    const slab = applicableStampDutyRules.slabs.find(s => value <= (s.upTo === 'infinity' ? Infinity : s.upTo));
+    stampDutyPercent = slab ? slab.rate : 0;
+  } else if (applicableStampDutyRules?.baseRate) {
+    stampDutyPercent = applicableStampDutyRules.baseRate;
+  } else if (applicableStampDutyRules) {
+    const maleRate = applicableStampDutyRules.male ?? 0;
+    const femaleRate = applicableStampDutyRules.female ?? maleRate;
+    const jointRate = applicableStampDutyRules.joint ?? maleRate;
+    if (buyerCategory === 'female') {
+      stampDutyPercent = femaleRate;
+      if (femaleRate < maleRate) concessionApplied = `Women's concession applied.`;
+    } else if (buyerCategory === 'joint') {
+      stampDutyPercent = jointRate;
+      if (jointRate < maleRate) concessionApplied = `Joint ownership concession applied.`;
+    } else {
+      stampDutyPercent = maleRate;
+    }
+  }
+
+  if (slug === 'uttar-pradesh' && buyerCategory === 'female' && value > 1000000) {
+    stampDutyPercent = stampDutyRules.male ?? 7.0;
+    concessionApplied = '';
+  } else if (slug === 'uttar-pradesh' && buyerCategory === 'female' && value <= 1000000) {
+    concessionApplied = `Women's concession applied (up to ₹10 Lakhs).`;
+  }
+
+  let stampDutyAmount = (value * stampDutyPercent) / 100;
+  let totalAdditionalLevies = 0;
+
+  if (additionalLevies) {
+    if (additionalLevies.cessPercentageOnStampDuty) totalAdditionalLevies += stampDutyAmount * (additionalLevies.cessPercentageOnStampDuty / 100);
+    if (additionalLevies.surchargeOnStampDuty) totalAdditionalLevies += stampDutyAmount * (additionalLevies.surchargeOnStampDuty / 100);
+    if (additionalLevies.cowCessOnStampDuty) totalAdditionalLevies += stampDutyAmount * (additionalLevies.cowCessOnStampDuty / 100);
+    if (additionalLevies.transferDuty) totalAdditionalLevies += value * (additionalLevies.transferDuty / 100);
+    if (additionalLevies.additionalStampDuty) totalAdditionalLevies += value * (additionalLevies.additionalStampDuty / 100);
+    if (additionalLevies.surcharge) totalAdditionalLevies += value * (additionalLevies.surcharge / 100);
+    if (additionalLevies.municipalCess) totalAdditionalLevies += value * (additionalLevies.municipalCess / 100);
+    if (additionalLevies.janpadCess) totalAdditionalLevies += value * (additionalLevies.janpadCess / 100);
+    if (additionalLevies.metroCess && locationType === 'urban') totalAdditionalLevies += value * (additionalLevies.metroCess / 100);
+    if (additionalLevies.sicCess) totalAdditionalLevies += value * (additionalLevies.sicCess / 100);
+    if (additionalLevies.pidbCess) totalAdditionalLevies += value * (additionalLevies.pidbCess / 100);
+  }
+  stampDutyAmount += totalAdditionalLevies;
+
+  let registrationAmount = 0;
+  if (registrationRules.tiered && registrationRules.tiers) {
+    const tier = registrationRules.tiers.find(t => value <= (t.upTo === 'infinity' ? Infinity : t.upTo));
+    registrationAmount = tier ? tier.fee : 0;
+  } else if (registrationRules.rate !== undefined) {
+    registrationAmount = (value * registrationRules.rate) / 100;
+    if (registrationRules.capAmount && registrationAmount > registrationRules.capAmount) {
+      registrationAmount = registrationRules.capAmount;
+    }
+  }
+
+  if (slug === 'tamil-nadu' && buyerCategory === 'female' && registrationRules.womenConcession && value <= registrationRules.womenConcession.upTo) {
+    registrationAmount = (value * registrationRules.womenConcession.rate) / 100;
+    concessionApplied = `${concessionApplied} Registration concession for women applied.`.trim();
+  }
+
   const totalAmount = stampDutyAmount + registrationAmount;
+  const effectiveStampDutyPercent = value > 0 ? (stampDutyAmount / value) * 100 : 0;
+  const effectiveRegistrationPercent = value > 0 ? (registrationAmount / value) * 100 : 0;
 
   return {
-    stampDutyPercent,
     stampDutyAmount,
-    registrationPercent,
     registrationAmount,
     totalAmount,
-    concessionApplied,
+    stampDutyPercent: effectiveStampDutyPercent,
+    registrationPercent: effectiveRegistrationPercent,
+    concessionApplied: concessionApplied.trim(),
   };
 }
-
-type BuyerCategory = 'male' | 'female' | 'joint';
 
 export function StampDutyCalculator({ stateData }: CalculatorProps) {
   const [propertyValue, setPropertyValue] = useState<string>('');
   const [buyerCategory, setBuyerCategory] = useState<BuyerCategory>('male');
+  const [locationType, setLocationType] = useState<LocationType>('urban');
   const [copied, setCopied] = useState(false);
 
   // Reset calculator when the selected state changes for a better UX.
   useEffect(() => {
     setPropertyValue('');
     setBuyerCategory('male');
+    setLocationType('urban');
   }, [stateData]);
 
-  const hasWomenConcession = stateData.womenConcession && stateData.womenConcession > 0;
-  const hasJointConcession =
-    stateData.jointOwnershipConcession && stateData.jointOwnershipConcession > 0;
-  const showBuyerCategory = hasWomenConcession || hasJointConcession;
+  const showLocationSelector = !!(stateData.stampDutyRules.urban && stateData.stampDutyRules.rural);
+
+  const hasGenderCategory = useMemo(() => {
+    const rules = stateData.stampDutyRules;
+    if (rules.female || rules.joint) return true;
+    if (rules.urban && (rules.urban.female || rules.urban.joint)) return true;
+    if (rules.rural && (rules.rural.female || rules.rural.joint)) return true;
+    return false;
+  }, [stateData]);
 
   const calculations = useMemo(() => {
-    return calculateStampDuty(propertyValue, buyerCategory, stateData);
-  }, [propertyValue, buyerCategory, stateData]);
+    return calculateStampDuty(propertyValue, buyerCategory, locationType, stateData);
+  }, [propertyValue, buyerCategory, locationType, stateData]);
 
   const handlePropertyValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/[^0-9]/g, '');
@@ -133,7 +197,27 @@ export function StampDutyCalculator({ stateData }: CalculatorProps) {
             </div>
           </div>
 
-          {showBuyerCategory && (
+          {showLocationSelector && (
+            <div>
+              <label htmlFor="locationType" className="block text-base font-medium text-foreground mb-2">
+                Location Type
+              </label>
+              <div className="relative">
+                <select
+                  id="locationType"
+                  value={locationType}
+                  onChange={(e) => setLocationType(e.target.value as LocationType)}
+                  className="appearance-none w-full px-4 py-3 text-base bg-background border-2 border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                >
+                  <option value="urban">Urban</option>
+                  <option value="rural">Rural</option>
+                </select>
+                <ChevronsUpDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+              </div>
+            </div>
+          )}
+
+          {hasGenderCategory && (
             <div>
               <label htmlFor="buyerCategory" className="block text-base font-medium text-foreground mb-2">
                 Buyer Category
@@ -146,8 +230,8 @@ export function StampDutyCalculator({ stateData }: CalculatorProps) {
                   className="appearance-none w-full px-4 py-3 text-base bg-background border-2 border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                 >
                   <option value="male">Male Buyer</option>
-                  {hasWomenConcession && <option value="female">Female Buyer</option>}
-                  {hasJointConcession && <option value="joint">Joint Ownership</option>}
+                  <option value="female">Female Buyer</option>
+                  <option value="joint">Joint Ownership</option>
                 </select>
                 <ChevronsUpDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
               </div>

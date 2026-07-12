@@ -42,13 +42,17 @@ export function HomeStampDutyCalculator() {
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        // Reset the input field text to the actual active state on close
+        if (selectedStateData) {
+          setSearchQuery(selectedStateData.state);
+        }
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [wrapperRef]);
+  }, [wrapperRef, selectedStateData]); // Added selectedStateData to dependencies
 
   const handleSelectState = (state: (typeof sortedStates)[0]) => {
     setSelectedStateSlug(state.slug);
@@ -69,8 +73,17 @@ export function HomeStampDutyCalculator() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setIsOpen(true)}
+              onFocus={() => {
+                setIsOpen(true);
+                if (searchQuery === selectedStateData?.state) {
+                  setSearchQuery('');
+                }
+              }}
               placeholder="Search for a state or UT..."
+              role="combobox"
+              aria-expanded={isOpen}
+              aria-autocomplete="list"
+              aria-controls="state-listbox"
               className="w-full pl-12 pr-10 py-4 text-base bg-background border-2 border-border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200"
             />
             <button
@@ -82,11 +95,16 @@ export function HomeStampDutyCalculator() {
             </button>
           </div>
           {isOpen && (
-            <ul className="absolute z-10 mt-2 w-full bg-card border border-border rounded-xl shadow-lg max-h-60 overflow-y-auto animate-in fade-in-0 zoom-in-95">
+            <ul
+              id="state-listbox"
+              role="listbox"
+              className="absolute z-10 mt-2 w-full bg-card border border-border rounded-xl shadow-lg max-h-60 overflow-y-auto animate-in fade-in-0 zoom-in-95"
+            >
               {filteredStates.map((state) => (
                 <li
                   key={state.slug}
                   onClick={() => handleSelectState(state)}
+                  role="option"
                   className="px-4 py-3 text-base text-foreground hover:bg-muted cursor-pointer transition-colors"
                 >
                   {state.state}
