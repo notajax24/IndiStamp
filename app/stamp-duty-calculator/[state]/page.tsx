@@ -29,21 +29,45 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
+  const BASE_URL = 'https://indistamp.mearksoft.com';
+  const pageUrl = `${BASE_URL}/stamp-duty-calculator/${stateSlug}`;
+  const title = `Stamp Duty Calculator ${stateData.state} (2026) | Property Registration Charges`;
+  const description = `Use our free online stamp duty calculator for ${stateData.state}. Instantly calculate property registration charges and other real estate taxes for your new home in 2026. The best home buyer tax calculator for ${stateData.state}.`;
+
   return {
-    title: `Stamp Duty Calculator for ${stateData.state} (2026) - IndiStamp`,
-    description: `Calculate stamp duty and registration charges for property purchases in ${stateData.state}. ${stateData.notes}`,
+    title,
+    description,
     keywords: [
-      'IndiStamp',
+      `stamp duty calculator ${stateData.state}`,
+      `property registration charges ${stateData.state}`,
+      `stamp duty in ${stateData.state}`,
+      'home buyer tax calculator',
+      'real estate calculator India',
+      'property stamp duty online',
       stateData.state,
-      'registration charges',
-      'property tax',
-      'real estate India',
     ],
     openGraph: {
-      title: `Stamp Duty Calculator for ${stateData.state} (2026) - IndiStamp`,
-      description: `Calculate your stamp duty and registration charges instantly for ${stateData.state}.`,
-      url: `https://stamp-duty-calculator.vercel.app/stamp-duty-calculator/${stateSlug}`,
+      title,
+      description,
+      url: pageUrl,
       type: 'website',
+      images: [
+        {
+          url: `${BASE_URL}/og-image.png`,
+          width: 1200,
+          height: 630,
+          alt: `Stamp Duty Calculator for ${stateData.state}`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [`${BASE_URL}/og-image.png`],
+    },
+    alternates: {
+      canonical: pageUrl,
     },
   };
 }

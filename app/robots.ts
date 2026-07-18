@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://stamp-duty-calculator.vercel.app/sitemap.xml',
+    sitemap: 'https://indistamp.mearksoft.com/sitemap.xml',
   };
 }
